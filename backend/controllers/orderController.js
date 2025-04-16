@@ -134,13 +134,6 @@ const createOrder = asyncHandler(async (req, res) => {
 //   }
 // });
 
-const path = require("path");
-const fs = require("fs");
-const mongoose = require("mongoose");
-const Order = require("../models/orderModel");
-const generateInvoice = require("../utils/generateInvoice");
-const sendEmail = require("../utils/sendEmail");
-
 const createInvoice = async (req, res) => {
   try {
     const { id: orderId } = req.params;
