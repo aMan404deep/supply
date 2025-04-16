@@ -134,6 +134,13 @@ const createOrder = asyncHandler(async (req, res) => {
 //   }
 // });
 
+const path = require("path");
+const fs = require("fs");
+const mongoose = require("mongoose");
+const Order = require("../models/orderModel");
+const generateInvoice = require("../utils/generateInvoice");
+const sendEmail = require("../utils/sendEmail");
+
 const createInvoice = async (req, res) => {
   try {
     const { id: orderId } = req.params;
@@ -154,31 +161,37 @@ const createInvoice = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // ✅ Ensure invoices folder exists
-    const invoiceDir = path.join(__dirname, "../invoices");
+    // ✅ Ensure invoices directory exists
+    const invoiceDir = path.resolve(__dirname, "../invoices");
     if (!fs.existsSync(invoiceDir)) {
       fs.mkdirSync(invoiceDir, { recursive: true });
     }
 
     const filePath = path.join(invoiceDir, `invoice_${order._id}.pdf`);
 
-    // 🧾 Generate the PDF invoice
+    // 🧾 Generate the PDF
     await generateInvoice(order, filePath);
 
-    // 📧 Optional: Send invoice via email
+    // 📧 Email it (optional)
     const customerEmail = order.customer?.email;
     if (customerEmail) {
       const subject = `Your Invoice for Order #${order._id}`;
-      const body = `Hi ${order.customer.name},\n\nAttached is your invoice for Order #${order._id}.\n\nThanks for shopping with us!`;
+      const body = `Hi ${order.customer.name},\n\nAttached is your invoice for Order #${order._id}.\n\nThank you!`;
       await sendEmail(customerEmail, subject, body, filePath);
     }
 
-    // 🖨️ Set correct headers to allow inline view
+    // 🔐 Allow frontend to view PDF inline
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename=invoice_${order._id}.pdf`);
 
-    // ✅ Send the file for browser viewing
-    return res.sendFile(filePath);
+    // ✅ Use absolute path with `sendFile`
+    return res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error("❌ Error sending invoice:", err.message);
+        res.status(500).json({ message: "Failed to send invoice" });
+      }
+    });
+
   } catch (error) {
     console.error("❌ Invoice generation error:", error);
     res.status(500).json({
@@ -187,6 +200,7 @@ const createInvoice = async (req, res) => {
     });
   }
 };
+
 
 const getAllOrders = asyncHandler(async (req, res) => {
   try {
