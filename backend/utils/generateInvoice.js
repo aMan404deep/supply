@@ -2,117 +2,119 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 
-const generateInvoice = async (order, filePath) => {
+const generateInvoice = (order, filePath) => {
   return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50 });
 
-      const writeStream = fs.createWriteStream(filePath);
-      doc.pipe(writeStream);
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
 
-      // Header
+    // ✅ Company Branding
+    // doc
+    //   .image("path/to/logo.png", 50, 45, { width: 100 }) // Change to your logo path
+    //   .fillColor("#444444")
+    //   .fontSize(20)
+    //   .text("Your Company Name", 150, 50, { align: "right" })
+    //   .fontSize(10)
+    //   .text("123 Business Road, Suite 200", 150, 70, { align: "right" })
+    //   .text("City, State, ZIP", 150, 85, { align: "right" })
+    //   .text("support@company.com", 150, 100, { align: "right" })
+    //   .moveDown();
+
+    // doc.moveDown(2);
+
+    // ✅ Invoice Title
+    doc
+      .fontSize(18)
+      .text("INVOICE", { align: "center", underline: true })
+      .moveDown();
+
+    // ✅ Invoice Details
+    doc
+      .fontSize(12)
+      .text(`Invoice No: ${order._id}`)
+      .text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`)
+      .text(`Customer: ${order.customer.name}`)
+      .text(`Email: ${order.customer.email}`)
+      .moveDown();
+
+    // ✅ Table Headers
+    const tableTop = doc.y + 10;
+    const columnWidths = [200, 100, 100, 100];
+    const columnPositions = [50, 250, 350, 450];
+
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .text("Item", columnPositions[0], tableTop)
+      .text("Quantity", columnPositions[1], tableTop)
+      .text("Price", columnPositions[2], tableTop)
+      .text("Total", columnPositions[3], tableTop);
+
+    // ✅ Draw a Border Under Table Headers
+    doc
+      .moveTo(50, tableTop + 15)
+      .lineTo(550, tableTop + 15)
+      .stroke();
+
+    let position = tableTop + 25;
+    doc.font("Helvetica").fontSize(12);
+
+    // ✅ Order Items - Properly Aligned
+    order.items.forEach((item) => {
       doc
-        .fontSize(22)
-        .fillColor("#0f766e")
-        .text("EverStock", { align: "center" })
-        .moveDown(0.5);
+        .text(item.product.name, columnPositions[0], position)
+        .text(item.quantity.toString(), columnPositions[1], position)
+        .text(`₹${item.product.price.toFixed(2)}`, columnPositions[2], position)
+        .text(`₹${(item.product.price * item.quantity).toFixed(2)}`, columnPositions[3], position);
 
-      doc
-        .fontSize(12)
-        .fillColor("#333")
-        .text("Order Invoice", { align: "center" })
-        .moveDown(2);
+      position += 20;
+    });
 
-      // Customer Info
-      doc
-        .fontSize(12)
-        .fillColor("#444")
-        .text(`Customer Name: ${order.customer?.name || "N/A"}`)
-        .text(`Email: ${order.customer?.email || "N/A"}`)
-        .text(`Order ID: ${order._id}`)
-        .text(`Tracking ID: ${order.trackingId}`)
-        .text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`)
-        .moveDown();
+    // ✅ Total Amount
+    doc
+      .moveTo(50, position + 5)
+      .lineTo(550, position + 5)
+      .stroke();
 
-      // Order Table Header
-      doc
-        .fontSize(12)
-        .fillColor("#000")
-        .text("Product", 50, doc.y, { continued: true })
-        .text("Qty", 250, doc.y, { continued: true })
-        .text("Price", 300, doc.y, { continued: true })
-        .text("Subtotal", 400, doc.y);
+    doc
+      .font("Helvetica-Bold")
+      .text("Total Amount:", columnPositions[2], position + 10)
+      .text(`₹${order.totalAmount.toFixed(2)}`, columnPositions[3], position + 10);
 
-      doc.moveDown(0.5).strokeColor("#ccc").lineWidth(1).moveTo(50, doc.y).lineTo(550, doc.y).stroke().moveDown(0.5);
-
-      // Order Items
-      order.items.forEach((item) => {
-        const name = item.product?.name || "Unknown";
-        const qty = item.quantity || 0;
-        const price = item.product?.price || 0;
-        const subtotal = qty * price;
-
-        doc
-          .fontSize(12)
-          .fillColor("#333")
-          .text(name, 50, doc.y, { continued: true })
-          .text(qty.toString(), 250, doc.y, { continued: true })
-          .text(`₹${price.toFixed(2)}`, 300, doc.y, { continued: true })
-          .text(`₹${subtotal.toFixed(2)}`, 400, doc.y);
-      });
-
-      doc.moveDown(1.5);
-
-      // Total
-      const total = order.totalAmount || 0;
-      doc
-        .fontSize(14)
-        .fillColor("#000")
-        .text(`Total Amount: ₹${total.toFixed(2)}`, { align: "right" })
-        .moveDown();
-
-      // QR Code
-      if (order.qrCode && order.qrCode.startsWith("data:image/png;base64,")) {
-        doc
-          .fontSize(12)
-          .fillColor("#444")
-          .text("Scan this QR code to track your order:", { align: "center" })
-          .moveDown(0.5);
-
-        try {
-          const qrCodeBuffer = Buffer.from(order.qrCode.split(",")[1], "base64");
-          const qrPath = path.join(__dirname, `../invoices/qr_${order._id}.png`);
-          fs.writeFileSync(qrPath, qrCodeBuffer);
-
-          doc.image(qrPath, {
-            fit: [150, 150],
-            align: "center",
-          });
-
-          // Clean up temp QR image after doc ends
-          writeStream.on("finish", () => {
-            fs.unlinkSync(qrPath);
-            resolve();
-          });
-        } catch (err) {
-          console.error("QR Code Error:", err);
-          resolve(); // Continue even if QR fails
-        }
-      } else {
-        writeStream.on("finish", () => resolve());
-      }
-
-      // Footer
-      doc.moveDown(3);
-      doc
-        .fontSize(10)
-        .fillColor("#aaa")
-        .text("Thank you for ordering with EverStock!", { align: "center" });
-
-      doc.end();
-    } catch (err) {
-      reject(err);
+    // ✅ Payment Details
+    doc.moveDown();
+    doc
+      .fontSize(12)
+      .text(`Payment Mode: ${order.paymentMode || "N/A"}`)
+      .text(`Payment Status: ${order.paymentStatus || "Unpaid"}`);
+    // ✅ Embed QR Code
+    // ✅ Convert Base64 QR Code to Image & Embed in PDF
+    const qrCodeDir = path.join(__dirname, "../qrcodes");
+    if (!fs.existsSync(qrCodeDir)) {
+      fs.mkdirSync(qrCodeDir, { recursive: true }); // 🔥 Create folder if it doesn't exist
     }
+    if (order.qrCode) {
+      doc.moveDown(2);
+      doc.fontSize(12).text("Scan this QR Code to track your order:", { align: "center" });
+
+      try {
+        const qrCodeBuffer = Buffer.from(order.qrCode.split(",")[1], "base64");
+        const qrCodePath = path.join(qrCodeDir, `qr_${order._id}.png`); 
+
+        fs.writeFileSync(qrCodePath, qrCodeBuffer);
+        doc.image(qrCodePath, { align: "center", width: 150 });
+      } catch (error) {
+        console.error("Error embedding QR Code:", error);
+      }
+    }
+
+      
+    // ✅ Footer - Company Note
+    
+    doc.end();
+    stream.on("finish", () => resolve(filePath));
+    stream.on("error", reject);
   });
 };
 
