@@ -5,6 +5,37 @@ import { Loader2, Package, Truck, MapPin, Edit3, Save, User, ShieldCheck, Chevro
 import Sidebar from "../components/Sidebar";
 
 const CustomerDashboard = () => {
+
+  const downloadInvoice = async (orderId) => {
+    try {
+      const token = localStorage.getItem("token"); // Or from Redux/auth slice
+      const response = await fetch(`/api/orders/invoice/${orderId}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to download invoice.");
+      }
+  
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+  
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Invoice-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+  
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download error:", error.message);
+    }
+  };
+
   const dispatch = useDispatch();
   const { orders, tracking, profile, loading, error } = useSelector((state) => state.customer);
   const [trackingId, setTrackingId] = useState("");
@@ -204,13 +235,21 @@ const CustomerDashboard = () => {
                                 </div>
                               </td>
                               <td className="py-4 px-4 text-right">
-                                <button
-                                  className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-sm hover:from-emerald-700 hover:to-teal-700 transform transition-transform duration-200 hover:scale-105 shadow-md"
-                                  onClick={() => setTrackingId(order.trackingId)}
-                                >
-                                  <Truck className="inline-block w-4 h-4 mr-1" />
-                                  Track
-                                </button>
+                                <div className="flex flex-col items-end space-y-2">
+                                  <button
+                                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-sm hover:from-emerald-700 hover:to-teal-700 transform transition-transform duration-200 hover:scale-105 shadow-md"
+                                    onClick={() => setTrackingId(order.trackingId)}
+                                  >
+                                    <Truck className="inline-block w-4 h-4 mr-1" />
+                                    Track
+                                  </button>
+                                  <button
+                                    className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm hover:from-indigo-700 hover:to-purple-700 transform transition-transform duration-200 hover:scale-105 shadow-md"
+                                    onClick={() => downloadInvoice(order._id)}
+                                  >
+                                    Download Invoice
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}

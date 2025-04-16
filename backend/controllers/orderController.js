@@ -136,10 +136,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
 const createInvoice = async (req, res) => {
   try {
-    console.log("Received full URL:", req.originalUrl);
-    console.log("Received request params:", req.params);
-
-    const { id: orderId } = req.params; // Extract orderId from URL params
+    const { id: orderId } = req.params;
 
     if (!orderId) {
       return res.status(400).json({ message: "Missing orderId in URL" });
@@ -149,9 +146,6 @@ const createInvoice = async (req, res) => {
       return res.status(400).json({ message: "Invalid order ID format" });
     }
 
-    console.log("Processing orderId:", orderId);
-
-    // ✅ Fetch order from DB with populated customer & product details
     const order = await Order.findById(orderId)
       .populate("customer", "name email")
       .populate("items.product", "name price");
@@ -160,31 +154,33 @@ const createInvoice = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // ✅ Ensure `invoices/` directory exists
+    // ✅ Ensure invoices folder exists
     const invoiceDir = path.join(__dirname, "../invoices");
     if (!fs.existsSync(invoiceDir)) {
       fs.mkdirSync(invoiceDir, { recursive: true });
     }
 
     const filePath = path.join(invoiceDir, `invoice_${order._id}.pdf`);
-    
-    console.log(`Generating invoice at: ${filePath}`);
+
+    // 🧾 Generate the PDF invoice
     await generateInvoice(order, filePath);
 
+    // 📧 Optional: Send invoice via email
     const customerEmail = order.customer?.email;
-    if (!customerEmail) {
-      return res.status(400).json({ message: "Customer email not found." });
+    if (customerEmail) {
+      const subject = `Your Invoice for Order #${order._id}`;
+      const body = `Hi ${order.customer.name},\n\nAttached is your invoice for Order #${order._id}.\n\nThanks for shopping with us!`;
+      await sendEmail(customerEmail, subject, body, filePath);
     }
 
-    const emailSubject = `Your Invoice for Order #${order._id}`;
-    const emailBody = `Hello ${order.customer.name},\n\nPlease find attached your invoice for Order #${order._id}.\n\nThank you for your purchase!`;
+    // 🖨️ Set correct headers to allow inline view
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename=invoice_${order._id}.pdf`);
 
-    console.log(`Sending email to: ${customerEmail}`);
-    await sendEmail(customerEmail, emailSubject, emailBody, filePath);
-
-    res.status(200).json({ message: "Invoice generated and sent successfully", filePath });
+    // ✅ Send the file for browser viewing
+    return res.sendFile(filePath);
   } catch (error) {
-    console.error("Invoice generation error:", error);
+    console.error("❌ Invoice generation error:", error);
     res.status(500).json({
       message: "Error generating invoice",
       error: error.message || error,

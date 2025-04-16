@@ -12,39 +12,37 @@ const warehouseRoutes = require("./routes/warehouseRoutes.js");
 const inventoryRoutes = require("./routes/inventoryRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
-const invoiceRoutes = require("./routes/invoiceRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 dotenv.config();
 connectDB();
 
 const app = express();
-const server = http.createServer(app); // Create HTTP server
+const server = http.createServer(app); 
 const io = new Server(server, {
   cors: {
-    origin: "https://everstock.netlify.app", // Adjust for frontend
+    origin: "https://everstock.netlify.app",
     methods: ["GET", "POST", "PUT"],
   },
 });
 
 app.use(cors({
-  origin: "https://everstock.netlify.app", // Your frontend URL
-  credentials: true // Allow credentials
+  origin: "https://everstock.netlify.app", 
+  credentials: true 
 }));
 app.use(express.json());
 
-// WebSocket for real-time shipment tracking
 io.on("connection", (socket) => {
   console.log(`⚡ Client connected: ${socket.id}`);
 
   socket.on("trackShipment", (shipmentId) => {
     console.log(`📦 Tracking shipment: ${shipmentId}`);
-    socket.join(shipmentId); // Join room for shipment
+    socket.join(shipmentId); 
   });
 
   socket.on("updateShipment", (data) => {
     console.log(`🚚 Shipment ${data.shipmentId} updated to: ${data.status}`);
-    io.to(data.shipmentId).emit("shipmentUpdated", data); // Notify users
+    io.to(data.shipmentId).emit("shipmentUpdated", data); 
   });
 
   socket.on("disconnect", () => {
@@ -54,7 +52,7 @@ io.on("connection", (socket) => {
 
 // Routes
 app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes); // Fixed duplicate order route
+app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/warehouses", warehouseRoutes);
@@ -62,20 +60,15 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/driver", require("./routes/driverRoutes"));
 app.use("/api/customer", customerRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/invoice", invoiceRoutes);
 
 app.get('/ping', (req, res) => {
   console.log('Keep-alive ping received');
   res.status(200).send('OK');
 });
 
-// Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);
 
-
-
-// Export io instance for WebSocket events in routes
 module.exports = { app,io };
 
 const PORT = process.env.PORT || 5000;
