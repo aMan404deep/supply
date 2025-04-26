@@ -18,7 +18,7 @@ const {
 
 const router = express.Router();
 router.post("/", protect, createOrder); // ✅ Ensure this route exists
-router.get("/", protect, authorize("admin", "warehouseManager"), getAllOrders);
+router.get("/", protect, authorize("admin", "warehouse_manager"), getAllOrders);
 router.get("/user", protect, getCustomerOrders);
 // router.get("/user", protect, getUserOrders);
 
@@ -26,7 +26,7 @@ router.get("/user", protect, getCustomerOrders);
 router.put("/:id/cancel", protect, authorize("admin", "customer"), cancelOrder);
 
 // Admins & Warehouse Managers can update order status (including cancellations)
-router.put("/:id", protect, authorize("admin", "warehouseManager"), updateOrderStatus);
+router.put("/:id", protect, authorize("admin", "warehouse_manager"), updateOrderStatus);
 router.get("/invoice/:id", createInvoice);
 // Drivers can also update shipment status
 router.put(
