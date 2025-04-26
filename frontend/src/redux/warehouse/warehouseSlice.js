@@ -17,7 +17,7 @@ export const fetchWarehouseStats = createAsyncThunk(
 // ✅ Fetch List of Warehouses
 export const fetchWarehouses = createAsyncThunk("warehouse/fetchWarehouses", async (_, thunkAPI) => {
   try {
-    const response = await axios.get("http://localhost:5000/api/warehouses");
+    const response = await axios.get("https://supplychainpro.onrender.com/api/warehouses");
     
     if (!Array.isArray(response.data)) {
       throw new Error("Invalid response: Expected an array.");
@@ -32,7 +32,7 @@ export const fetchWarehouses = createAsyncThunk("warehouse/fetchWarehouses", asy
 // ✅ Add the missing fetchProducts function
 export const fetchProducts = createAsyncThunk("warehouse/fetchProducts", async (_, thunkAPI) => {
   try {
-    const response = await axios.get("http://localhost:5000/api/products");
+    const response = await axios.get("https://supplychainpro.onrender.com/api/products");
     
     if (!Array.isArray(response.data)) {
       throw new Error("Invalid response: Expected an array of products.");
