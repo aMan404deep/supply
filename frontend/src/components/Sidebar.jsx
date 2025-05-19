@@ -151,7 +151,7 @@ const Sidebar = () => {
       { title: "Dashboard", icon: <BarChart size={20} />, path: "/dashboard" },
       { title: "Inventory", icon: <Layers size={20} />, path: "/inventory" },
       { title: "Orders", icon: <Package size={20} />, path: "/orders" },
-      { title: "Shipments", icon: <Truck size={20} />, path: "/warehouse/shipments" },
+      // { title: "Shipments", icon: <Truck size={20} />, path: "/warehouse/shipments" },
     ],
     driver: [
       { title: "Dashboard", icon: <BarChart size={20} />, path: "/dashboard" },
