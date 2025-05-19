@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/orders";
+const API_URL = "https://supplychainpro.onrender.com/api/orders";
 
 // 📌 Fetch assigned deliveries for the driver
 export const getDriverOrders = async (token) => {

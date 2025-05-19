@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import 'leaflet/dist/leaflet.css';
 /* Add this to your global CSS */
 .custom-scrollbar {
     scrollbar-width: thin;

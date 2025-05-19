@@ -338,13 +338,13 @@ const Home = () => {
                   <rect x="255" y="325" width="130" height="15" fill="#334155" rx="2" ry="2"/>
                   
                   <polyline points="260,400 290,390 320,410 350,370 380,380 410,350 440,360 470,330 500,345 530,320" 
-                          fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                          fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                           
                   <polyline points="260,420 290,430 320,415 350,425 380,405 410,415 440,395 470,405 500,385 530,380" 
-                          fill="none" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                          fill="none" stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                           
-                  <line x1="260" y1="430" x2="530" y2="430" stroke="#64748b" stroke-width="1"/>
-                  <line x1="260" y1="430" x2="260" y2="330" stroke="#64748b" stroke-width="1"/>
+                  <line x1="260" y1="430" x2="530" y2="430" stroke="#64748b" strokeWidth="1"/>
+                  <line x1="260" y1="430" x2="260" y2="330" stroke="#64748b" strokeWidth="1"/>
 
                   <rect x="270" y="440" width="10" height="5" fill="#64748b" rx="1" ry="1"/>
                   <rect x="330" y="440" width="10" height="5" fill="#64748b" rx="1" ry="1"/>
@@ -359,7 +359,7 @@ const Home = () => {
                   <rect x="580" y="310" width="180" height="150" fill="#1f2937" rx="8" ry="8"/>
                   <rect x="595" y="325" width="100" height="15" fill="#334155" rx="2" ry="2"/>
                   
-                  <circle cx="670" cy="385" r="50" fill="none" stroke="#475569" stroke-width="1"/>
+                  <circle cx="670" cy="385" r="50" fill="none" stroke="#475569" strokeWidth="1"/>
                   
                   <path d="M670,385 L670,335 A50,50 0 0,1 713,407 z" fill="#10b981"/>
                   <path d="M670,385 L713,407 A50,50 0 0,1 627,407 z" fill="#0ea5e9"/>

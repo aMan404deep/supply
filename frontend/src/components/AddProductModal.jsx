@@ -7,12 +7,14 @@ const AddProductModal = ({ onClose }) => {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({ 
     name: "", 
-    category: "", 
+    category: "Electronics", 
     stock: 0, 
     price: 0,
-    description: "",
-    sku: ""
+    description: ""
   });
+
+  // Category options from the productModel enum
+  const categoryOptions = ["Electronics", "Clothing", "Home", "Grocery", "Other"];
 
   const handleChange = (e) => {
     const value = e.target.type === "number" 
@@ -90,28 +92,29 @@ const AddProductModal = ({ onClose }) => {
               </div>
             </div>
             
-            {/* SKU & Category - 2 column layout */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                <input 
-                  type="text" 
-                  name="sku" 
-                  placeholder="SKU" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <input 
-                  type="text" 
+            {/* Category Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Package size={18} className="text-emerald-500" />
+                </div>
+                <select 
                   name="category" 
-                  placeholder="Category" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
+                  value={formData.category}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition-all appearance-none bg-white"
                   onChange={handleChange} 
                   required 
-                />
+                >
+                  {categoryOptions.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
               </div>
             </div>
             

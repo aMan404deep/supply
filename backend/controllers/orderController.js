@@ -27,7 +27,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
   try {
     const trackingId = uuidv4();
-    const trackingUrl = `http://localhost:5000/api/orders/track/${trackingId}`; // Replace with real domain
+    const trackingUrl = `https://supplychainpro.onrender.com/api/orders/track/${trackingId}`; // Replace with real domain
 
     // Generate QR Code for Tracking
     const qrCodeData = await QRCode.toDataURL(trackingUrl);

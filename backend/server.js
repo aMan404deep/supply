@@ -26,10 +26,15 @@ const io = new Server(server, {
   },
 });
 
+// app.use(cors({
+//   origin: "https://everstock.netlify.app", 
+//   credentials: true 
+// }));
 app.use(cors({
   origin: "https://everstock.netlify.app", 
   credentials: true 
 }));
+
 app.use(express.json());
 
 io.on("connection", (socket) => {

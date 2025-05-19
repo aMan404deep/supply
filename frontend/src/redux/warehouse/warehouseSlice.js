@@ -29,12 +29,27 @@ export const fetchWarehouses = createAsyncThunk("warehouse/fetchWarehouses", asy
   }
 });
 
+// ✅ Add the missing fetchProducts function
+export const fetchProducts = createAsyncThunk("warehouse/fetchProducts", async (_, thunkAPI) => {
+  try {
+    const response = await axios.get("https://supplychainpro.onrender.com/api/products");
+    
+    if (!Array.isArray(response.data)) {
+      throw new Error("Invalid response: Expected an array of products.");
+    }
+
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch products");
+  }
+});
 
 const warehouseSlice = createSlice({
   name: "warehouse",
   initialState: {
     stats: {},
     warehouses: [],  // ✅ Ensure this is an array
+    products: [],    // ✅ Add products array to the state
     loading: false,
     error: null,
   },  
@@ -61,6 +76,19 @@ const warehouseSlice = createSlice({
         state.warehouses = action.payload;
       })
       .addCase(fetchWarehouses.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Add cases for fetchProducts
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload;
+      })
+      .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
